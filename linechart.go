@@ -3,15 +3,17 @@ package sknlinechart
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"log"
-	"os"
-	"sync"
-	"time"
 )
 
 /*
@@ -50,10 +52,6 @@ import (
  *    manages their display.
  */
 
-import (
-	"strings"
-)
-
 // LineChartSkn widget implements the LineChart interface
 // to display multiple series of data points
 // which will roll off older point beyond the  point limit.
@@ -64,7 +62,8 @@ type LineChartSkn struct {
 	dataPointStrokeSize     float32
 	dataPointXLimit         int
 	dataPointYLimit         float32
-	chartScaleMultiplier    int
+	chartYScaleMultiplier   int
+	chartXScaleMultiplier   int
 	enableDataPointMarkers  bool
 	enableHorizGridLines    bool
 	enableVertGridLines     bool
@@ -100,10 +99,10 @@ var _ fyne.CanvasObject = (*LineChartSkn)(nil)
 //
 // can return a valid chart object and an error object; errors really should be handled
 // and are caused by data points exceeding the container limit of 150; they will be truncated
-func NewLineChart(topTitle, bottomTitle string, yScaleFactor int, dataPoints *map[string][]*ChartDatapoint) (LineChart, error) {
-	return New(topTitle, bottomTitle, yScaleFactor, dataPoints)
+func NewLineChart(topTitle, bottomTitle string, xScaleFactor, yScaleFactor int, dataPoints *map[string][]*ChartDatapoint) (LineChart, error) {
+	return New(topTitle, bottomTitle, xScaleFactor, yScaleFactor, dataPoints)
 }
-func New(topTitle, bottomTitle string, yScaleFactor int, dataPoints *map[string][]*ChartDatapoint) (LineChart, error) {
+func New(topTitle, bottomTitle string, xScaleFactor, yScaleFactor int, dataPoints *map[string][]*ChartDatapoint) (LineChart, error) {
 	if dataPoints == nil {
 		return nil, errors.New("dataPoint Params cannot be nil")
 	}
@@ -128,7 +127,8 @@ func New(topTitle, bottomTitle string, yScaleFactor int, dataPoints *map[string]
 		dataSeriesAdded:         true,
 		dataPointXLimit:         dpl,
 		dataPointYLimit:         float32(yScaleFactor * 13),
-		chartScaleMultiplier:    yScaleFactor,
+		chartXScaleMultiplier:   xScaleFactor,
+		chartYScaleMultiplier:   yScaleFactor,
 		enableDataPointMarkers:  true,
 		enableHorizGridLines:    true,
 		enableVertGridLines:     true,

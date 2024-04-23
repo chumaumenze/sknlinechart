@@ -1,14 +1,15 @@
 package sknlinechart_test
 
 import (
+	"math/rand"
+	"reflect"
+	"time"
+
 	_ "fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/skoona/sknlinechart"
-	"math/rand"
-	"reflect"
-	"time"
 )
 
 var _ = Describe("verify line chart initial state", func() {
@@ -101,7 +102,7 @@ func makeUI(title, footer string, points int) (sknlinechart.LineChart, error) {
 			dataPoints["Testing"] = append(dataPoints["Testing"], &point)
 		}
 	}
-	lineChart, err := sknlinechart.NewLineChart(title, footer, 10, &dataPoints)
+	lineChart, err := sknlinechart.NewLineChart(title, footer, 1, 10, &dataPoints)
 	lineChart.EnableDebugLogging(false)
 
 	return lineChart, err

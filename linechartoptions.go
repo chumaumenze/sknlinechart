@@ -3,11 +3,17 @@ package sknlinechart
 import (
 	"errors"
 	"fmt"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
 	"log"
+	"log/slog"
 	"os"
 	"sync"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
+)
+
+const (
+	XPointLimit = 150
 )
 
 // ChartOption alternate methodof sett chart properties
@@ -67,7 +73,8 @@ func NewWithOptions(options *ChartOptions) (LineChart, error) {
 		dataSeriesAdded:         true,
 		dataPointXLimit:         150,
 		dataPointYLimit:         float32(10 * 13),
-		chartScaleMultiplier:    10,
+		chartXScaleMultiplier:   1,
+		chartYScaleMultiplier:   10,
 		enableDataPointMarkers:  true,
 		enableHorizGridLines:    true,
 		enableVertGridLines:     true,
@@ -166,7 +173,24 @@ func WithRightScaleLabel(label string) ChartOption {
 func WithYScaleFactor(maxYScaleLabel int) ChartOption {
 	return func(lc *LineChartSkn) error {
 		lc.dataPointYLimit = float32(maxYScaleLabel * 13)
-		lc.chartScaleMultiplier = maxYScaleLabel
+		lc.chartYScaleMultiplier = maxYScaleLabel
+		return nil
+	}
+}
+
+// WithXLimit sets the dataPointXLimit value x to value <>150
+func WithXLimit(xLimit int) ChartOption {
+	return func(lc *LineChartSkn) error {
+		if xLimit <= 0 || xLimit > XPointLimit {
+			return nil
+		}
+		lc.dataPointXLimit = xLimit
+
+		// Revalidate datapoints
+		err := WithDataPoints(lc.dataPoints)(lc)
+		if err != nil {
+			slog.Warn(err.Error())
+		}
 		return nil
 	}
 }
@@ -242,7 +266,7 @@ func WithDataPoints(seriesData map[string][]*ChartDatapoint) ChartOption {
 			return errors.New("dataPoint Params cannot be nil")
 		}
 		err := errors.New("")
-		dpl := 150 // max xScale
+		dpl := lc.dataPointXLimit // max xScale
 		for key, points := range seriesData {
 			cnt := len(points)
 			if cnt > dpl {

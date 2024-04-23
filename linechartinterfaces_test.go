@@ -1,12 +1,13 @@
 package sknlinechart_test
 
 import (
+	"reflect"
+	"time"
+
 	"fyne.io/fyne/v2/theme"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/skoona/sknlinechart"
-	"reflect"
-	"time"
 )
 
 var _ = Describe("Linechartinterfaces", func() {
@@ -16,7 +17,7 @@ var _ = Describe("Linechartinterfaces", func() {
 		dIntf := reflect.TypeOf((*sknlinechart.ChartDatapoint)(nil)).Elem()
 
 		var dataPoints map[string][]*sknlinechart.ChartDatapoint
-		chart, _ := sknlinechart.NewLineChart("Title", "Footer", 10, &dataPoints)
+		chart, _ := sknlinechart.NewLineChart("Title", "Footer", 1, 10, &dataPoints)
 		cIntf := reflect.TypeOf((*sknlinechart.LineChart)(nil)).Elem()
 
 		By("ChartDatapoint interface should be implemented")
