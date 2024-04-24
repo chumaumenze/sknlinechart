@@ -12,10 +12,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
-const (
-	XPointLimit = 150
-)
-
 // ChartOption alternate methodof sett chart properties
 type ChartOption func(lc *LineChartSkn) error
 
@@ -72,7 +68,7 @@ func NewWithOptions(options *ChartOptions) (LineChart, error) {
 		dataPointStrokeSize:     2.0,
 		dataSeriesAdded:         true,
 		dataPointXLimit:         150,
-		dataPointYLimit:         float32(10 * 13),
+		dataPointYLimit:         float32(10 * YPointLimit),
 		chartXScaleMultiplier:   1,
 		chartYScaleMultiplier:   10,
 		enableDataPointMarkers:  true,
@@ -169,11 +165,19 @@ func WithRightScaleLabel(label string) ChartOption {
 	}
 }
 
-// WithYScaleFactor controls the yScale value y time 13 equals max y scale
-func WithYScaleFactor(maxYScaleLabel int) ChartOption {
+// WithYScaleFactor controls the yScale value y time YPointLimit equals max y scale
+func WithYScaleFactor(maxYScale int) ChartOption {
 	return func(lc *LineChartSkn) error {
-		lc.dataPointYLimit = float32(maxYScaleLabel * 13)
-		lc.chartYScaleMultiplier = maxYScaleLabel
+		lc.dataPointYLimit = float32(maxYScale * YPointLimit)
+		lc.chartYScaleMultiplier = maxYScale
+		return nil
+	}
+}
+
+// WithXScaleFactor controls the xScale value
+func WithXScaleFactor(maxXScale int) ChartOption {
+	return func(lc *LineChartSkn) error {
+		lc.chartXScaleMultiplier = maxXScale
 		return nil
 	}
 }

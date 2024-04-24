@@ -13,6 +13,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const (
+	XPointLimit = 150
+	YPointLimit = 13
+)
+
 // Widget Renderer code starts here
 type lineChartRenderer struct {
 	widget                *LineChartSkn // Reference to the widget holding the current state
@@ -82,7 +87,7 @@ func newLineChartRenderer(lineChart *LineChartSkn) fyne.WidgetRenderer {
 		xlines = append(xlines, x)
 		objs = append(objs, x)
 	}
-	for i := 0; i < 14; i++ { // horiz line
+	for i := 0; i < YPointLimit+1; i++ { // horiz line
 		y := canvas.NewLine(theme.PrimaryColorNamed(theme.ColorGreen))
 		y.StrokeWidth = 0.25
 		ylines = append(ylines, y)
@@ -90,8 +95,8 @@ func newLineChartRenderer(lineChart *LineChartSkn) fyne.WidgetRenderer {
 	}
 
 	// Y scale labels
-	for i := 0; i < 14; i++ {
-		yt := strconv.Itoa((13 - i) * lineChart.chartYScaleMultiplier)
+	for i := 0; i < YPointLimit+1; i++ {
+		yt := strconv.Itoa((YPointLimit - i) * lineChart.chartYScaleMultiplier)
 		yl := canvas.NewText(yt, theme.ForegroundColor())
 		yl.Alignment = fyne.TextAlignTrailing
 		yLabels = append(yLabels, yl)
@@ -362,9 +367,9 @@ func (r *lineChartRenderer) layoutSeries(series string) {
 	r.widget.debugLog("lineChartRenderer::layoutSeries() ENTER. Series: ", series)
 	// data points
 	xp := r.xInc
-	yp := r.yInc * 14.0
+	yp := r.yInc * float32(YPointLimit+1)
 	yScale := (r.yInc * 10) / (10.0 * float32(r.widget.chartYScaleMultiplier)) // 100
-	xScale := (r.xInc * 10) / 100
+	xScale := (r.xInc * float32(r.widget.dataPointXLimit*r.widget.chartXScaleMultiplier)) / float32(r.widget.dataPointXLimit*r.widget.chartXScaleMultiplier)
 	var dp float32
 	data := r.widget.dataPoints[series] // datasource
 	lastPoint := fyne.NewPos(xp, yp)
@@ -439,7 +444,7 @@ func (r *lineChartRenderer) Layout(s fyne.Size) {
 	r.yInc = float32(math.Trunc(float64(r.yInc)))
 
 	// grid Vert lines
-	yp := 14.0 * r.yInc
+	yp := float32(YPointLimit+1) * r.yInc
 	for idx, line := range r.xLines {
 		xp := float32(idx) * r.xInc
 		line.Position1 = fyne.NewPos(xp+r.xInc, r.yInc) //top
@@ -456,7 +461,7 @@ func (r *lineChartRenderer) Layout(s fyne.Size) {
 
 	// grid scale labels
 	xp = r.xInc
-	yp = 14.0 * r.yInc
+	yp = float32(YPointLimit+1) * r.yInc
 	for idx, label := range r.xLabels {
 		xxp := float32(idx+1) * r.xInc // starting at left
 		label.Move(fyne.NewPos(xxp+8, yp+10))
